@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import * as XLSX from "xlsx";
 import {
   ShoppingBag,
   Store,
@@ -201,6 +202,27 @@ const INITIAL_PRODUCTS: Product[] = [
       { id: "r4", customerName: "منى الحربي", rating: 5, comment: "إضاءة مكتبية مريحة جداً وتصميم أنيق.", date: "2026-10-09" }
     ]
   }
+];
+
+const INVOICE_PRODUCTS: Product[] = [
+  { id: "inv-1", name: "لا روش بوزيه إيفاكالر ديو + 3337875750042", description: "جل لا روش بوزيه إيفاكالر ديو للعناية بالبشرة المعرضة للشوائب", price: 44, stock: 30, category: "beauty", image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80", tags: ["عناية", "لاروش"], reviews: [] },
+  { id: "inv-2", name: "جل لا روش بوساي إفاكالر إم 400 مل", description: "غسول جل من لاروش بوزيه لتنقية البشرة الدهنية 400 مل", price: 44, stock: 25, category: "beauty", image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80", tags: ["غسول", "لاروش"], reviews: [] },
+  { id: "inv-3", name: "كريم مرطب سريافيه 454 جرام", description: "كريم مرطب غني بالسراميد وحمض الهيالورونيك للبشرة الجافة", price: 54, stock: 40, category: "beauty", image: "https://images.unsplash.com/photo-1608248597359-9d7a22709e3e?auto=format&fit=crop&w=600&q=80", tags: ["سيرافي", "مرطب"], reviews: [] },
+  { id: "inv-4", name: "بيوتي اوف جونسون ريليف صن: الأرز + البريبيوتيك 50ml", description: "واقي شمس كوري بخلاصة الأرز والبربيوتيك لحماية فائقة", price: 31, stock: 50, category: "beauty", image: "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=600&q=80", tags: ["واقي شمس", "جونسون"], reviews: [] },
+  { id: "inv-5", name: "لوشن مرطب للوجه خفيف الوزن للغاية من سرياف", description: "لوشن مرطب للوجه مع 3 سراميدات أساسية وحمض الهيالورونيك", price: 52, stock: 35, category: "beauty", image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80", tags: ["سيرافي", "لوشن"], reviews: [] },
+  { id: "inv-6", name: "يوسريين - جل حماية من الشمس للتحكم بالزيوت", description: "جل واقي شمس للبشرة الدهنية والمعرضة لحب الشباب", price: 69, stock: 20, category: "beauty", image: "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=600&q=80", tags: ["يوسيرين", "حماية"], reviews: [] },
+  { id: "inv-7", name: "شامبو ميلي المقوي بالروزماري والنعناع", description: "شامبو مغذي ومقوي لفروة الرأس والشعر بالروزماري والبيوتين", price: 25, stock: 60, category: "beauty", image: "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=600&q=80", tags: ["شامبو", "ميلي"], reviews: [] },
+  { id: "inv-8", name: "سيروم فيتامين سي من سريافي 30 مل", description: "سيروم فيتامين سي النقي لتفتيح البشرة وتحفيز الكولاجين", price: 68, stock: 30, category: "beauty", image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80", tags: ["سيروم", "سيرافي"], reviews: [] },
+  { id: "inv-9", name: "قناع الشعر K18 لإصلاح الشعر الجزيئي بدون شطف", description: "علاج ثوري لإصلاح الشعر التالف وكسور الروابط الجزيئية", price: 69, stock: 15, category: "beauty", image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80", tags: ["شعر", "K18"], reviews: [] },
+  { id: "inv-10", name: "ذا أورديناري - محلول الكافيين 5% + EGCG 30 مل", description: "محلول مركز للهالات السوداء والانتفاخ تحت العينين", price: 32, stock: 45, category: "beauty", image: "https://images.unsplash.com/photo-1608248597359-9d7a22709e3e?auto=format&fit=crop&w=600&q=80", tags: ["أورديناري", "عينين"], reviews: [] },
+  { id: "inv-11", name: "ذا أورديناري نياسيناميد 10% + زنك 1% 30 مل", description: "سيروم تنظيم إفراز الدهون وتقليل المسام الواسعة", price: 32, stock: 50, category: "beauty", image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80", tags: ["أورديناري", "نياسيناميد"], reviews: [] },
+  { id: "inv-12", name: "ذا أورديناري حمض الهيالورونيك العادي 2% + ترطيب B5", description: "مصل مرطب عميق لملء الخطوط الدقيقة وإنعاش البشرة", price: 32, stock: 55, category: "beauty", image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80", tags: ["أورديناري", "هيالورونيك"], reviews: [] },
+  { id: "inv-13", name: "غسول بانوكسيل الرغوي لعلاج حب الشباب 10%", description: "غسول طبي فعال بتركيز 10% بنزويل بيروكسيد للقضاء على حب الشباب", price: 36, stock: 30, category: "beauty", image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80", tags: ["بانوكسيل", "حب الشباب"], reviews: [] },
+  { id: "inv-14", name: "بيوديرما سينسيبيو H2O منظف مكياج 500 مل", description: "ماء ميسيلار التنظيف المفضل للبشرة الحساسة وإزالة المكياج بلطف", price: 25, stock: 40, category: "beauty", image: "https://images.unsplash.com/photo-1608248597359-9d7a22709e3e?auto=format&fit=crop&w=600&q=80", tags: ["بيوديرما", "ميسيلار"], reviews: [] },
+  { id: "inv-15", name: "أولابلكس ان 3 ترميم واصلاح الشعر 100مل", description: "علاج منزلي مكثف لإصلاح وترميم الشعر التالف والمعالج حرارياً", price: 33, stock: 25, category: "beauty", image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80", tags: ["أولابلكس", "شعر"], reviews: [] },
+  { id: "inv-16", name: "سيروم تعزيز كثافة الرموش والحواجب - مصل متعدد الببتيدات", description: "مصل مغذي لنمو وتكثيف الرموش والحواجب بفعالية عالية", price: 32, stock: 35, category: "beauty", image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80", tags: ["رموش", "عناية"], reviews: [] },
+  { id: "inv-17", name: "ذا أورديناري تونر حمض الجليكوليك 7% للتقشير والتفتيح", description: "تونر مقشر بحمض الجليكوليك 7% لتجديد خلايا البشرة وتوحيد لونها", price: 38, stock: 40, category: "beauty", image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80", tags: ["أورديناري", "تونر"], reviews: [] },
+  { id: "inv-18", name: "بيوديرما سيكابيو 40 مل للإصلاح والتهدئه", description: "كريم مهدئ ومصلح للبشرة المتهيجة والمتضررة", price: 38, stock: 30, category: "beauty", image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80", tags: ["بيوديرما", "سيكابيو"], reviews: [] }
 ];
 
 const INITIAL_EMPLOYEES: Employee[] = [
@@ -755,6 +777,100 @@ export default function App() {
     setIsProductModalOpen(false);
     setEditingProduct(null);
     setProductForm({ name: "", description: "", price: 100, discountPrice: 0, stock: 10, category: categories[0]?.id || "tech", image: "", tags: "" });
+  };
+
+  // Bulk Excel/CSV Import & Export
+  const handleBulkFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const data = new Uint8Array(evt.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
+
+        if (jsonData.length === 0) {
+          alert("الملف المرفوع فارغ أو لا يحتوي على بيانات صحيحة.");
+          return;
+        }
+
+        const newProducts: Product[] = jsonData.map((row, idx) => ({
+          id: `bulk-${Date.now()}-${idx}`,
+          name: String(row.name || row['اسم المنتج'] || `منتج جملة ${idx + 1}`),
+          description: String(row.description || row['الوصف'] || 'منتج مميز مستورد بالجملة'),
+          price: Number(row.price || row['السعر'] || 100),
+          discountPrice: row.discountPrice || row['سعر الخصم'] ? Number(row.discountPrice || row['سعر الخصم']) : undefined,
+          stock: Number(row.stock || row['المخزون'] || 20),
+          category: String(row.category || row['التصنيف'] || categories[0]?.id || 'tech'),
+          image: String(row.image || row['رابط الصورة'] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80'),
+          tags: row.tags ? String(row.tags).split(',').map(t => t.trim()) : ['جملة', 'منتج ذكي'],
+          reviews: []
+        }));
+
+        setProducts(prev => [...newProducts, ...prev]);
+        alert(`تم استيراد وإضافة ${newProducts.length} منتج جملة بنجاح! 🎉`);
+      } catch (err) {
+        console.error(err);
+        alert("حدث خطأ أثناء قراءة الملف. تأكد من استخدام ملف أكسل أو CSV بالتنسيق الصحيح.");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    e.target.value = "";
+  };
+
+  const handleDownloadTemplate = () => {
+    const templateData = [
+      {
+        name: "سماعات بلوتوث برو",
+        description: "سماعات لاسلكية عالية الجودة مع ميكروفون",
+        price: 250,
+        discountPrice: 199,
+        stock: 50,
+        category: "tech",
+        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
+        tags: "سماعات,صوتيات"
+      },
+      {
+        name: "حقيبة ظهر ذكية",
+        description: "حقيبة ظهر مضادة للسرقة مع منفذ شحن USB",
+        price: 320,
+        discountPrice: 280,
+        stock: 30,
+        category: "fashion",
+        image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=80",
+        tags: "حقائب,أزياء"
+      }
+    ];
+    const ws = XLSX.utils.json_to_sheet(templateData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "ProductsTemplate");
+    XLSX.writeFile(wb, "SmartStore_Products_Template.xlsx");
+  };
+
+  const handleExportProducts = () => {
+    const exportData = products.map(p => ({
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      discountPrice: p.discountPrice || "",
+      stock: p.stock,
+      category: p.category,
+      image: p.image,
+      tags: p.tags.join(",")
+    }));
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "ProductsExport");
+    XLSX.writeFile(wb, "SmartStore_Products_Export.xlsx");
+  };
+
+  const handleLoadInvoiceProducts = () => {
+    setProducts(prev => [...INVOICE_PRODUCTS, ...prev]);
+    alert("تم تحميل وتوريد جميع منتجات فاتورة (Masar Al-Nokhba) بنجاح إلى المتجر! 🎉");
   };
 
   // Save Employee Handler
@@ -1460,20 +1576,48 @@ export default function App() {
             {/* --- ADMIN: PRODUCTS & IMAGES/VIDEOS MANAGEMENT --- */}
             {adminSubTab === "products" && (
               <div className="space-y-6">
-                <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                   <div>
                     <h3 className="font-bold text-lg text-slate-900">إدارة المنتجات والصور والفيديوهات (للموظفين والأدمين حصراً)</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">يمكنك إضافة المنتجات بشكل فردي أو استيرادها بالجملة عبر ملفات Excel / CSV والتعديل عليها</p>
                   </div>
-                  <button
-                    onClick={() => {
-                      setEditingProduct(null);
-                      setProductForm({ name: "", description: "", price: 100, discountPrice: 0, stock: 10, category: categories[0]?.id || "tech", image: "", tags: "" });
-                      setIsProductModalOpen(true);
-                    }}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow"
-                  >
-                    <Plus className="w-4 h-4" /> إضافة منتج جديد
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={handleDownloadTemplate}
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all"
+                      title="تحميل قالب الأكسل الجاهز للإدخال"
+                    >
+                      <FileText className="w-4 h-4 text-indigo-600" /> تحميل قالب الأكسل
+                    </button>
+                    <label className="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow cursor-pointer transition-all">
+                      <Plus className="w-4 h-4" /> استيراد جملة (Excel/CSV)
+                      <input type="file" accept=".xlsx, .xls, .csv" onChange={handleBulkFileUpload} className="hidden" />
+                    </label>
+                    <button
+                      onClick={handleLoadInvoiceProducts}
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition-all"
+                      title="تحميل منتجات الفاتورة المرفقة (Masar Al-Nokhba)"
+                    >
+                      <Sparkles className="w-4 h-4" /> تحميل منتجات الفاتورة المرفقة
+                    </button>
+                    <button
+                      onClick={handleExportProducts}
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all"
+                      title="تصدير جميع المنتجات لملف أكسل"
+                    >
+                      <Printer className="w-4 h-4 text-emerald-600" /> تصدير المنتجات
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingProduct(null);
+                        setProductForm({ name: "", description: "", price: 100, discountPrice: 0, stock: 10, category: categories[0]?.id || "tech", image: "", tags: "" });
+                        setIsProductModalOpen(true);
+                      }}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow"
+                    >
+                      <Plus className="w-4 h-4" /> إضافة منتج جديد
+                    </button>
+                  </div>
                 </div>
 
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
